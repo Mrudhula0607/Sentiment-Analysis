@@ -79,6 +79,12 @@ stop_words = stop_words + extra_words + punctuation
 
 print(stop_words)
 
+remove_list = ["no","not","don’t","aren’t","couldn’t","didn’t","mustn’t","hasn’t","haven’t","doesn’t","hadn’t", "isn’t","mightn’t","needn’t", "shan’t", "shouldn’t","wasn’t","weren’t","won’t","won","wouldn’t","can’t","don’t","aren’t","couldn’t","didn’t","mustnt","hasnt","havent","doesnt","hadnt", "isnt","mightnt","neednt", "shant", "shouldnt","wasnt","werent","wont","wouldnt","cant","donot","arenot","couldnot","didnot","mustnot","hasnot","havenot","doesnot","hadnot", "isnot","mightnot","neednot", "shallnot", "shouldnot","wasnot","werenot","willnot","wouldnot","cannot"]
+
+stop_words = [word for word in stop_words if word not in remove_list]
+
+print(stop_words)
+
 positive_cleaned = [None]*len(positive_tweets)
 for i in range(len(positive_tweets)):
   ans = []
@@ -194,27 +200,8 @@ plt.show();
 
 """# **STEP 4: BUILDING THE MULTINOMIAL NAIVE BAYESIAN CLASSIFIER**
 
-**DIVIDING THE DATA INTO TRAIN AND TEST SET**
+**WORD DENSITY**
 """
-
-from sklearn.model_selection import train_test_split
-
-x = dataset[dataset.columns[1]]
-x.head()
-y = dataset[dataset.columns[2]]
-y.head()
-
-x_train,x_test,y_train,y_test = train_test_split(x,y,test_size=0.2)
-
-x_train.head()
-
-y_train.head()
-
-x_test.head()
-
-y_test.head()
-
-"""**WORD DENSITY**"""
 
 def get_all_words(cleaned_tokens_list):
     for tokens in cleaned_tokens_list:
@@ -262,7 +249,7 @@ def clean(custom_tweet):
     if(w.startswith('http:/') or w.startswith('https:/') or w.startswith('@')):
       continue;
     if w not in stop_words: 
-        custom_tweet_cleaned.append(w)
+      custom_tweet_cleaned.append(w)
 
   return custom_tweet_cleaned
 
@@ -318,20 +305,25 @@ def MultinomialNaiveBayesianClassifier(custom_tweet):
   else:
     return classes[1]
 
-"""**TESTING THE MODEL WITH TESTING DATA**"""
-
-y_pred =[None]*x_test.size
-for i in range(x_test.size):
-  y_pred[i] = MultinomialNaiveBayesianClassifier(x_test.iloc[i])
-print(y_pred)
-
-"""**ACCURACY**"""
+"""**TESTING THE MODEL WITH TESTING AND TRAINING DATA**"""
 
 from sklearn.metrics import accuracy_score
 
-y_test_list = list(y_test)
-accuracy = accuracy_score(y_test_list, y_pred)*100
-print("Accuracy: ", accuracy, "%")
+size = [0.1, 0.2, 0.3, 0.4]
+accuracy_train = [None]*len(size)
+accuracy_test =[None]*len(size)
+
+for i in range(len(size)):
+  x_train,x_test,y_train,y_test = train_test_split(x,y,test_size=size[i])
+
+  #test set
+  y_pred_test =[None]*x_test.size
+  for j in range(x_test.size):
+    y_pred_test[j] = MultinomialNaiveBayesianClassifier(x_test.iloc[j])
+  y_test_list = list(y_test)
+  accuracy_test[i] = accuracy_score(y_test_list, y_pred_test)
+
+print(accuracy_test)
 
 """**CHECKING WITH CUSTOM TWEET**"""
 
